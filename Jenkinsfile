@@ -61,7 +61,7 @@ pipeline{
         }
         stage('Trigger Deploy Job'){
             steps{
-                build job: 'backend-deploy', parameters: [string(name: 'appVersion', value: "${appVersion}")], wait: false
+                build job: 'backend-cd', parameters: [string(name: 'appVersion', value: "${appVersion}")], wait: false
             }
         }
     }
