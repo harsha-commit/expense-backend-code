@@ -34,4 +34,41 @@ pipeline{
             steps{
                 sh """
                     rm -rf backend-${appVersion}.zip
-                    zip -rq backend-${appVersion}.zip * -x Jenki
+                    zip -rq backend-${appVersion}.zip * -x Jenkinsfile
+                """
+            }
+        }
+        stage('Nexus Artifact Upload'){
+            steps{
+                 nexusArtifactUploader(
+                    nexusVersion: 'nexus3',
+                    protocol: 'http',
+                    nexusUrl: "${nexusUrl}",
+                    groupId: 'com.expense',
+                    version: "${appVersion}",
+                    repository: 'backend',
+                    credentialsId: 'nexus-auth',
+                    artifacts: [
+                        [
+                            artifactId: "backend",
+                            classifier: '',
+                            file: 'backend-' + version + '.zip',
+                            type: 'zip'
+                        ]
+                    ]
+                )
+            }
+        }
+        stage('Trigger Deploy Job'){
+            steps{
+                build job: 'backend-deploy', parameters: [string(name: 'appVersion', value: "${appVersion}")], wait: false
+            }
+        }
+    }
+
+    post{
+        always{
+            deleteDir()
+        }
+    }
+}
